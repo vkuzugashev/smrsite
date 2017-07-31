@@ -1,0 +1,51 @@
+﻿* {
+   font-size: 14px;
+   line-height: 1.4;
+}
+
+.navbar {
+  min-height: 40px;
+  margin-bottom: 10px;
+}
+
+.navbar-brand {
+    font-size: 14px;
+}
+
+h1 {
+   font-size: 22px;
+}
+
+h2 {
+   font-size: 18px;
+}
+
+h3 {
+   font-size: 16px;
+}
+
+h4 {
+   font-size: 14px;
+}
+
+h5 {
+   font-size: 12px;
+}
+/*
+.btn, .btn-default {
+   font-size: 14px;
+   /*padding: 3px 12px;*/
+   /*padding-top: 3px;
+   padding-bottom: 3px;*/
+/*}*/
+
+/*.form-control {
+  height: 26px;
+  /*padding: 3px 12px;*/
+/*  font-size: 12px;
+}*/
+
+.input-group-addon {
+  font-size: 12px;
+  padding: 3px 12px;
+}

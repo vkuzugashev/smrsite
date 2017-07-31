@@ -1,0 +1,252 @@
+{% extends ":default:index.html.twig" %}
+
+{% block title %}SmRecord Admin консоль, список телефонов{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1>SmRecord список телефонов</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th class="col-md-1">
+                    <a href="#" class="btn btn-default" id="create" onclick="onEdit(0)"><span class="glyphicon glyphicon-plus"></span></a>
+                </th>
+                <th class="col-md-1">Номер</th>
+                <th class="col-md-10">Краткое описание</th>
+            </tr>
+            <tbody id="rows">
+                <tr>
+                    <td colspan="12">Загрузка ...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-2">Число записей <span class="badge" id="rowcount"></span></div>
+</div>
+
+   <div class="modal fade" id="EditForm" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Создать/Изменить элемент</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input type="hidden" id="_id" value="" />
+                            <label for="_phone" class="control-label">Номер</label>
+                            <input type="text" id="_phone" class="form-control" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="_description" class="control-label">Краткое описание</label>
+                            <textarea id="_description" class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="onUpdate()">Сохранить</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="DeleteForm" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Удалить элемент?</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input type="hidden" id="d_id" value="" />
+                            <label for="d_phone" class="control-label">Номер</label>
+                            <input type="text" id="d_phone" class="form-control" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="d_description" class="control-label">Краткое описание</label>
+                            <textarea  id="d_description" class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="onDelete()">Удалить</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>    
+    
+    
+<div class="modal fade" id="MessageBox" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Внимание!</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <span id="MessageBoxText" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+<script type="text/javascript">
+
+    function getNow() {
+        return new Date();
+    }
+
+    function formatDate(date) {
+        if (date) {
+            var dd = date.getDate();
+            if (dd < 10) dd = '0' + dd;
+            var mm = date.getMonth() + 1;
+            if (mm < 10) mm = '0' + mm;
+            var yyyy = date.getFullYear();
+            return yyyy + '-' + mm + '-' + dd;
+        }
+        else
+            return '';
+    }
+
+    $(document).ready(function () {
+        $.datepicker.regional['ru'] = {
+            closeText: 'Закрыть',
+            prevText: '&#x3c;Пред',
+            nextText: 'След&#x3e;',
+            currentText: 'Сегодня',
+            monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+            monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+            dayNames: ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'],
+            dayNamesShort: ['вск', 'пнд', 'втр', 'срд', 'чтв', 'птн', 'сбт'],
+            dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+            dateFormat: 'dd.mm.yy',
+            firstDay: 1,
+            isRTL: false
+        };
+        $.datepicker.setDefaults($.datepicker.regional['ru']);
+        $('#startdt').datepicker().datepicker('setDate', 'today');
+        $('#stopdt').datepicker().datepicker('setDate', 'today');
+        Select();
+    });
+
+    function Select() {
+
+        $('#btn_refresh').prop('disabled',true);
+        $('#rows').find('tr').remove().end();
+        $('#rows').append('<tr><td colspan="12">Загрузка данных ...</td></tr>');
+        $('#rowcount').text('0');
+
+        var param = {dt: getNow().getTime(),userid: {{ userid }} };
+
+        $.get('{{path('adminPhoneSelectAction')}}', param, function (data) {
+            if (data != null) {
+                $('#rows').find('tr').remove().end();
+                context = '';
+                
+                if (data.rowcount > 0) {
+                    $.each(data.rows, function (index, row) {
+                        context += '<tr>';                       
+                        context += '<td class="col-md-1">';
+                        context += '<a href="#" class="btn btn-default" onclick="onEdit(' + row.id + ')"><span class="glyphicon glyphicon-edit"></span></a>&nbsp;';
+                        context += '<a href="#" class="btn btn-default" onclick="onConfirmDelete(' + row.id + ')"><span class="glyphicon glyphicon-remove"></span></a>';
+                        context += '</td>';
+                        context += '<td class="col-md-1">' + row.phone + '</td>';
+                        context += '<td class="col-md-10">' + row.description + '</td>';
+                        context += '</tr>';
+                    });
+                } else
+                    context += '<tr><td colspan="12">Нет строк</td></tr>';
+                $('#rows').append(context);
+                $('#rowcount').text(data.rowcount);
+            }
+            $('#btn_refresh').prop('disabled', false);
+        });
+    }
+
+    function onEdit(id) {
+        var param = {dt: getNow().getTime(), id: id, userid: {{ userid }}};
+        $.get('{{path('adminPhoneEditAction')}}', param, function (data) {
+            //Запишем в форму
+            if (!data.error) {
+                $('#_id').val(data.row.id);
+                $('#_phone').val(data.row.phone);
+                $('#_description').val(data.row.description);
+                //Покажем форму
+                $('#EditForm').modal('show');
+            }
+        });
+    }
+
+    function onUpdate() {        
+        var param = {dt: getNow().getTime(), id: $('#_id').val(), userid: {{ userid }}, phone: $('#_phone').val(), description: $('#_description').val() };
+        $.post('{{path('adminPhoneEditAction')}}', param, function (data) {
+            //Запишем в форму
+                if (!data.error)
+                    Select();
+                else
+                    alert(data.message);
+        });        
+    }
+
+    function onConfirmDelete(id) {
+        var param = {dt: getNow().getTime(), id: id};
+        $.get('{{path('adminPhoneEditAction')}}', param, function (data) {
+            //Запишем в форму
+            if (!data.error) {
+                $('#d_id').val(data.row.id);
+                $('#d_phone').val(data.row.phone);
+                $('#d_description').val(data.row.description);
+                //Покажем форму
+                $('#DeleteForm').modal('show');
+            }
+        });
+    }
+
+    function onDelete() {
+        var param = {dt: getNow().getTime(), id: $('#d_id').val()};
+        $.post('{{path('adminPhoneDeleteAction')}}', param, function (data) {
+            if (!data.error)
+                Select();
+            else
+                alert(data.message);
+        });
+    }
+        
+    function ShowMessageBox(msg) {
+        $('#MessageBoxText').text(msg);
+        $('#MessageBox').modal('show');
+    }
+
+</script>
+{% endblock %}
+
