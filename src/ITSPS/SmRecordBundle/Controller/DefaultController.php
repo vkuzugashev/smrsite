@@ -66,7 +66,7 @@ class DefaultController extends Controller
                 'unanswered'=>$row->getUnanswered(),
                 'phone'=>$row->getPhone(),
                 'remotephone'=>$row->getRemotephone(),
-                'recordfile'=>'/records' . strrchr($row->getRecordfile(),'/'),
+                'recordfile'=> $row->getRecordfile(),
             );
         }
         $response = new JsonResponse();
