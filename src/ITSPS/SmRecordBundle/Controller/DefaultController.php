@@ -199,27 +199,30 @@ class DefaultController extends Controller
                     $row->setUnanswered($unanswered);
                     $row->setPhone($phone);
                     $row->setRemotephone($remotephone);
-//                    $row->setRecordfile($recordfile);
                     $row->setUserid($userid);
                     $row->setFilesize(0);
                     //загрузка файла
                     foreach ($_FILES as $key => $value)
                     {
-                        if ($value['error'] == 4) 
+                        if ($value['error'] == 4) {
                             continue; // Skip file if any error found
+                        }
 
                         $dir = 'records';
-                        if(!is_dir($dir))
+                        if(!is_dir($dir)){
                             mkdir($dir,0700);
+                        }
 
                         $dir .= '/'.$phone;
-                        if(!is_dir($dir))
+                        if(!is_dir($dir)) {
                             mkdir($dir,0700);
+                        }
 
                         $date = \DateTime::createFromFormat('YmdHis', $startdt);                        
                         $dir .= '/' . $date->format('Y-m-d');
-                        if(!is_dir($dir))
+                        if(!is_dir($dir)) {
                             mkdir($dir,0700);
+                        }
 
                         $file = $dir.'/'.$value['name'];
                         move_uploaded_file($value['tmp_name'], $file);
