@@ -28,6 +28,8 @@ class DefaultController extends Controller
      */
     public function selectAction(Request $request)
     {
+        $logger = $this->get('logger');
+
         $offset = mktime(0,0,0,1,1,1970);        
         $startdt = $request->query->get('startdt');
         $stopdt = $request->query->get('stopdt');
@@ -35,9 +37,14 @@ class DefaultController extends Controller
         $remotephone=$request->query->get('remotephone');
         
         $em =  $this->getDoctrine()->getManager();
-        $users = $em->getRepository("SmRecordBundle:User")->findByUsername($this->getUser()->getUsername());
+        
+        $user = $this->getUser()->getUsername();
+        $logger->debug('User request data: '.$user);
+        
+        $users = $em->getRepository("SmRecordBundle:User")->findByUsername($user);
         if(count($users) > 0){
             $userid=$users[0]->getId();
+            $logger->debug('Userid: '.$userid);
             $query = $em->createQuery('select o from SmRecordBundle:Record o '
                     . 'where o.startdt between :p1 and :p2 and o.phone like :p3 and o.remotephone like :p4 and o.userid=:p5 order by o.startdt');
             $query->setParameter('p1',\DateTime::createFromFormat('Y-m-d H:i:s', $startdt.' 00:00:00'));
@@ -45,6 +52,7 @@ class DefaultController extends Controller
             $query->setParameter('p3', '%'.$phone.'%');
             $query->setParameter('p4', '%'.$remotephone.'%');
             $query->setParameter('p5', $userid);
+            $logger->debug('SQL: '.$query->getSql());
             $elements = $query->getResult();
         }
         else
@@ -63,6 +71,10 @@ class DefaultController extends Controller
         }
         $response = new JsonResponse();
         $response->setData(array('rows'=>$rows, 'rowcount'=>count($rows)));     
+        
+        if(count($rows)==0)
+            $logger->warn('No data found!');
+        
         return $response; 
     }
 
@@ -87,6 +99,14 @@ class DefaultController extends Controller
             );
     }    
     
+    /**
+     * @Route("/logout", name="logout")
+     * @Template()
+     */
+    public function logoutAction() {
+        $this->get('security.token_storage')->setToken(NULL);
+        return $this->redirectToRoute('login');
+    }    
     
     /**
      * @Route("/smrecord/sr", name="smrecord")
@@ -94,6 +114,8 @@ class DefaultController extends Controller
      */
     public function smRecordSaveAction(Request $request)
     {   
+        $logger = $this->get('logger');
+
         $em =  $this->getDoctrine()->getManager();
         $startdt = $request->request->get('STARTDT');
         $stopdt = $request->request->get('STOPDT');
@@ -125,16 +147,17 @@ class DefaultController extends Controller
                     $em->persist($row);
                     $em->flush();     
                 }
-                catch(Exception $ex){
-                    $logger = $this->get('logger');
-                    $logger->error('Ошибка сохранения: '.$ex->getMessage());
+                catch(\Exception $ex){
+                    $logger->error('Record not saved: '.$ex->getMessage());
                 }
             }
             else{
-                $logger = $this->get('logger');
-                $logger->info('Неверный формат даты: '.$startdt);
+                $logger->warn('Uncknow format date: '.$startdt);
             }
         }
+        else
+            $logger->warn('Not registered phone: '.$phone);
+        
         $response = new JsonResponse();
         $response->setData(array('result'=>'OK'));     
         return $response; 
@@ -147,6 +170,8 @@ class DefaultController extends Controller
      */
     public function smRecordSave2Action(Request $request)
     {        
+        $logger = $this->get('logger');
+
         $em =  $this->getDoctrine()->getManager();
         $startdt = $request->request->get('STARTDT');
         $stopdt = $request->request->get('STOPDT');
@@ -164,7 +189,7 @@ class DefaultController extends Controller
             $userid=$phonerecord[0]->getUserid();
             if($startdt!="0" /*&& substr($startdt,0,4)=="2016" && substr($startdt,0,5)!="2016-"*/){
                 try{
-                    $row = new Record();
+                    $row = new Record();                    
                     $row->setStartdt(\DateTime::createFromFormat('YmdHis', $startdt));
                     if($duration != 0 && $stopdt!=null){
                         $row->setStopdt(\DateTime::createFromFormat('YmdHis', $stopdt));
@@ -174,36 +199,46 @@ class DefaultController extends Controller
                     $row->setUnanswered($unanswered);
                     $row->setPhone($phone);
                     $row->setRemotephone($remotephone);
-                    $row->setRecordfile($recordfile);
+//                    $row->setRecordfile($recordfile);
                     $row->setUserid($userid);
                     $row->setFilesize(0);
                     //загрузка файла
                     foreach ($_FILES as $key => $value)
                     {
-                        if ($value['error'] == 4) {
+                        if ($value['error'] == 4) 
                             continue; // Skip file if any error found
-                        }  
+
                         $dir = 'records';
-                        if(!is_dir($dir)){
+                        if(!is_dir($dir))
                             mkdir($dir,0700);
-                        }
+
+                        $dir .= '/'.$phone;
+                        if(!is_dir($dir))
+                            mkdir($dir,0700);
+
+                        $date = \DateTime::createFromFormat('YmdHis', $startdt);                        
+                        $dir .= '/' . $date->format('Y-m-d');
+                        if(!is_dir($dir))
+                            mkdir($dir,0700);
+
                         $file = $dir.'/'.$value['name'];
                         move_uploaded_file($value['tmp_name'], $file);
+                        $row->setRecordfile($file);
                         $row->setFilesize($value['size']);
                     }                       
                     $em->persist($row);
                     $em->flush();
                 }
-                catch(Exception $ex){
-                    $logger = $this->get('logger');
-                    $logger->info('Ошибка сохранения данных: '.$ex->getMessage());                    
+                catch(\Exception $ex){
+                    $logger->error('Record not saved: '.$ex->getMessage());                    
                 }
             }
             else{
-                $logger = $this->get('logger');
-                $logger->info('Неверный формат даты: '.$startdt);
+                $logger->warn('Uncknow format date: '.$startdt);
             }
-        }            
+        }
+        else
+            $logger->warn('Not registered phone: '.$phone);
         
         $response = new JsonResponse();
         $response->setData(array('result'=>'OK'));     

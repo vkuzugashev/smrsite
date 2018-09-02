@@ -41,6 +41,7 @@ class AdminController extends Controller
                 'description'=>$row->getDescription(),
             );
         }
+        
         $response = new JsonResponse();
         $response->setData(array('rows'=>$rows, 'rowcount'=>count($rows)));     
         return $response; 
