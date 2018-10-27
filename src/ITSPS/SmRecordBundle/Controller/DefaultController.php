@@ -66,7 +66,8 @@ class DefaultController extends Controller
                 'unanswered'=>$row->getUnanswered(),
                 'phone'=>$row->getPhone(),
                 'remotephone'=>$row->getRemotephone(),
-                'recordfile'=> $row->getRecordfile(),
+		'recordfile'=> $row->getRecordfile(),
+                //'recordfile'=>'/records' . strrchr($row->getRecordfile(),'/'),
             );
         }
         $response = new JsonResponse();
@@ -185,7 +186,7 @@ class DefaultController extends Controller
         $phonerecord = $em->getRepository("SmRecordBundle:UserPhone")->findByPhone($phone);
         
         //Проверим что разрешено загружать запись
-        if(count($phonerecord) > 0){
+        if(count($phonerecord) > 0) {
             $userid=$phonerecord[0]->getUserid();
             if($startdt!="0" /*&& substr($startdt,0,4)=="2016" && substr($startdt,0,5)!="2016-"*/){
                 try{
@@ -199,30 +200,27 @@ class DefaultController extends Controller
                     $row->setUnanswered($unanswered);
                     $row->setPhone($phone);
                     $row->setRemotephone($remotephone);
+//                    $row->setRecordfile($recordfile);
                     $row->setUserid($userid);
                     $row->setFilesize(0);
                     //загрузка файла
                     foreach ($_FILES as $key => $value)
                     {
-                        if ($value['error'] == 4) {
+                        if ($value['error'] == 4) 
                             continue; // Skip file if any error found
-                        }
 
                         $dir = 'records';
-                        if(!is_dir($dir)){
+                        if(!is_dir($dir))
                             mkdir($dir,0700);
-                        }
 
                         $dir .= '/'.$phone;
-                        if(!is_dir($dir)) {
+                        if(!is_dir($dir))
                             mkdir($dir,0700);
-                        }
 
                         $date = \DateTime::createFromFormat('YmdHis', $startdt);                        
                         $dir .= '/' . $date->format('Y-m-d');
-                        if(!is_dir($dir)) {
+                        if(!is_dir($dir))
                             mkdir($dir,0700);
-                        }
 
                         $file = $dir.'/'.$value['name'];
                         move_uploaded_file($value['tmp_name'], $file);
@@ -231,23 +229,32 @@ class DefaultController extends Controller
                     }                       
                     $em->persist($row);
                     $em->flush();
+		    //Приняли ОК
+        	    $response = new JsonResponse();
+		    return $response; 
                 }
                 catch(\Exception $ex){
                     $logger->error('Record not saved: '.$ex->getMessage());                    
+		    //Приняли ERROR
+        	    $response = new JsonResponse(null, 404);
+		    return $response; 
                 }
-            }
-            else{
+
+            } else {
                 $logger->warn('Uncknow format date: '.$startdt);
+		//Приняли ERROR
+       	        $response = new JsonResponse(null, 404);
+		return $response; 
             }
-        }
-        else
+
+        } else {
             $logger->warn('Not registered phone: '.$phone);
-        
-        $response = new JsonResponse();
-        $response->setData(array('result'=>'OK'));     
-        return $response; 
+	    //Приняли ERROR
+       	    $response = new JsonResponse(null, 404);
+	    return $response; 
+        }
     }
-    
+   
     
     
 }
