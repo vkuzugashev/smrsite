@@ -42,6 +42,26 @@ class UserPhone
      */
     private $userid;
 
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="isrec", type="integer")
+     */
+    private $isrec;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="hourfrom", type="integer")
+     */
+    private $hourfrom;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="hourto", type="integer")
+     */
+    private $hourto;
 
     /**
      * Get id
@@ -122,4 +142,77 @@ class UserPhone
     {
         return $this->userid;
     }
-}
+    
+    /**
+     * Set userid
+     *
+     * @param integer $isrec
+     * @return UserPhone
+     */
+    public function setIsrec($isrec)
+    {
+        $this->isrec = $isrec;
+
+        return $this;
+    }
+
+    /**
+     * Get isrec
+     *
+     * @return integer 
+     */
+    public function getIsrec()
+    {
+        return $this->isrec;
+    }    
+
+    
+    /**
+     * Set hourfrom
+     *
+     * @param integer $hourfrom
+     * @return UserPhone
+     */
+    public function setHourfrom($hourfrom)
+    {
+        $this->hourfrom = $hourfrom;
+
+        return $this;
+    }
+
+    /**
+     * Get hourfrom
+     *
+     * @return integer 
+     */
+    public function getHourfrom()
+    {
+        return $this->hourfrom;
+    }    
+    
+ /**
+     * Set hourfrom
+     *
+     * @param integer $hourfrom
+     * @return UserPhone
+     */
+    public function setHourto($hourto)
+    {
+        $this->hourto = $hourto;
+
+        return $this;
+    }
+
+    /**
+     * Get hourfrom
+     *
+     * @return integer 
+     */
+    public function getHourto()
+    {
+        return $this->hourto;
+    }    
+    
+    
+    
+    }

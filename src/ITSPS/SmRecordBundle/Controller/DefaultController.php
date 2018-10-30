@@ -255,6 +255,36 @@ class DefaultController extends Controller
         }
     }
    
-    
+    /**
+     * @Route("/smrecord/conf", name="conf")
+     * @Method({"POST"})
+     * 
+     */
+    public function confAction(Request $request)
+    {        
+        $logger = $this->get('logger');
+
+        $em =  $this->getDoctrine()->getManager();
+        $phone = $request->request->get('PHONE');
+        
+        $phonerecord = $em->getRepository("SmRecordBundle:UserPhone")->findByPhone($phone);
+        
+        //Проверим что разрешено загружать запись
+        if(count($phonerecord) > 0) {
+           $row=array(
+                'isrec'=>$data->getIsrec(),
+                'hourfrom'=>$data->getHourfrom(),
+                'hourto'=>$data->getHourto(),
+            );
+            $response = new JsonResponse();
+            $response->setData(array('row'=>$row, 'error'=>false));
+            return $response;                
+        } else {
+            $logger->warn('Not registered phone: '.$phone);
+	    //Приняли ERROR
+       	    $response = new JsonResponse(null, 404);
+	    return $response; 
+        }
+    }    
     
 }

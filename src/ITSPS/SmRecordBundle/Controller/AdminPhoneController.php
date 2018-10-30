@@ -41,7 +41,10 @@ class AdminPhoneController extends Controller
                 'id'=>$row->getId(),
                 'phone'=> $row->getPhone(),                
                 'description'=>$row->getDescription(),
-            );
+                'isrec'=>$row->getIsrec(),
+                'hourfrom'=>$row->getHourfrom(),
+                'hourto'=>$row->getHourto()
+             );
         }
         $response = new JsonResponse();
         $response->setData(array('rows'=>$rows, 'rowcount'=>count($rows)));     
@@ -64,12 +67,18 @@ class AdminPhoneController extends Controller
         } else {
             $data = new UserPhone();
             $data->setPhone('');
+            $data->setIsrec(0);
+            $data->setHourfrom(8);
+            $data->setHourto(14);
         }
         $row=array(
             'id'=>$data->getId(),
             'userid'=>$userid,
             'phone'=>$data->getPhone(),
             'description'=>$data->getDescription(),
+            'isrec'=>$data->getIsrec(),
+            'hourfrom'=>$data->getHourfrom(),
+            'hourto'=>$data->getHourto(),
         );
         $response = new JsonResponse();
         $response->setData(array('row'=>$row, 'error'=>false));
@@ -88,6 +97,11 @@ class AdminPhoneController extends Controller
             $userid = $request->request->getInt('userid');
             $phone = $request->request->get('phone');
             $description = $request->request->get('description');
+            $isrec = $request->request->get('isrec');
+            $hourfrom = $request->request->get('hourfrom');
+            $hourto = $request->request->get('hourto');
+            
+            
             if($phone==null){
                 $response = new JsonResponse();
                 $response->setData(array('error'=>true, 'message'=>'Требуется указать номер!'));
@@ -110,6 +124,9 @@ class AdminPhoneController extends Controller
             $data->setUserid($userid);
             $data->setPhone($phone);
             $data->setDescription($description);
+            $data->setIsrec($isrec);
+            $data->setHourfrom($hourfrom);
+            $data->setHourto($hourto);
             
             if($id == 0){
                 $em->persist($data);

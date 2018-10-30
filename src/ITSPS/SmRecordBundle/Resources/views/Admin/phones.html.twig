@@ -14,7 +14,10 @@
                     <a href="#" class="btn btn-default" id="create" onclick="onEdit(0)"><span class="glyphicon glyphicon-plus"></span></a>
                 </th>
                 <th class="col-md-1">Номер</th>
-                <th class="col-md-10">Краткое описание</th>
+                <th class="col-md-1">Запись</th>
+                <th class="col-md-1">От</th>
+                <th class="col-md-1">До</th>
+                <th class="col-md-7">Краткое описание</th>
             </tr>
             <tbody id="rows">
                 <tr>
@@ -42,6 +45,24 @@
                             <input type="hidden" id="_id" value="" />
                             <label for="_phone" class="control-label">Номер</label>
                             <input type="text" id="_phone" class="form-control" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="_isrec" class="control-label">Запись</label>
+                            <input type="checkbox" id="_isrec" class="form-control" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="_hourfrom" class="control-label">От</label>
+                            <input type="text" id="_hourfrom" class="form-control" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="_hourto" class="control-label">До</label>
+                            <input type="text" id="_hourto" class="form-control" value="" />
                         </div>
                     </div>
                     <div class="row">
@@ -181,7 +202,10 @@
                         context += '<a href="#" class="btn btn-default" onclick="onConfirmDelete(' + row.id + ')"><span class="glyphicon glyphicon-remove"></span></a>';
                         context += '</td>';
                         context += '<td class="col-md-1">' + row.phone + '</td>';
-                        context += '<td class="col-md-10">' + row.description + '</td>';
+                        context += '<td class="col-md-1">' + (row.isrec=="1" ? "*" : "") + '</td>';
+                        context += '<td class="col-md-1">' + row.hourfrom + '</td>';
+                        context += '<td class="col-md-1">' + row.hourto + '</td>';
+                        context += '<td class="col-md-7">' + row.description + '</td>';
                         context += '</tr>';
                     });
                 } else
@@ -200,6 +224,9 @@
             if (!data.error) {
                 $('#_id').val(data.row.id);
                 $('#_phone').val(data.row.phone);
+                $('#_isrec').prop('checked', data.row.isrec==1 ? true : false);
+                $('#_hourfrom').val(data.row.hourfrom);
+                $('#_hourto').val(data.row.hourto);
                 $('#_description').val(data.row.description);
                 //Покажем форму
                 $('#EditForm').modal('show');
@@ -208,7 +235,7 @@
     }
 
     function onUpdate() {        
-        var param = {dt: getNow().getTime(), id: $('#_id').val(), userid: {{ userid }}, phone: $('#_phone').val(), description: $('#_description').val() };
+        var param = {dt: getNow().getTime(), id: $('#_id').val(), userid: {{ userid }}, phone: $('#_phone').val(), isrec: $('#_isrec').prop('checked') ? 1 : 0, hourfrom: $('#_hourfrom').val(), hourto: $('#_hourto').val(), description: $('#_description').val() };
         $.post('{{path('adminPhoneEditAction')}}', param, function (data) {
             //Запишем в форму
                 if (!data.error)
