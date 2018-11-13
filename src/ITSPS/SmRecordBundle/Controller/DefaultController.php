@@ -272,12 +272,13 @@ class DefaultController extends Controller
         //Проверим что разрешено загружать запись
         if(count($phonerecord) > 0) {
            $row=array(
-                'isrec'=>$data->getIsrec(),
-                'hourfrom'=>$data->getHourfrom(),
-                'hourto'=>$data->getHourto(),
+                'isrec'=>$phonerecord[0]->getIsrec(),
+                'hourfrom'=>$phonerecord[0]->getHourfrom(),
+                'hourto'=>$phonerecord[0]->getHourto(),
             );
             $response = new JsonResponse();
-            $response->setData(array('row'=>$row, 'error'=>false));
+            //$response->setData(array('row'=>$row, 'error'=>false));
+	    $response->setData($row);
             return $response;                
         } else {
             $logger->warn('Not registered phone: '.$phone);
