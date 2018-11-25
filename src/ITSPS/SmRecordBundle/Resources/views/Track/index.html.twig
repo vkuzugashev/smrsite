@@ -1,0 +1,110 @@
+{% extends ":default:index.html.twig" %}
+
+{% block title %}SmRecord трак консоль{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1>SmRecord локация пользователя</h1>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="control-label">Дата</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <input type="text" id="dt" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="control-label">Номер</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <input type="text" id="phone" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label for="btn_refresh" class="control-label">&nbsp;</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="button" id="btn_refresh" class="btn btn-default" onclick="onRefresh()"><span class="glyphicon glyphicon-refresh"></span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+
+        <div id="map" style="width: 1000px; height: 800px"></div>
+
+    {% endblock %}
+
+    {% block javascripts %}
+        {{ parent() }}
+
+        <script src="https://api-maps.yandex.ru/2.1/?apikey=25f6caf5-4c7b-4b37-871b-8a862acbc6cb&lang=ru_RU" type="text/javascript">
+        </script>
+
+        <script type="text/javascript">
+            var myMap;
+            ymaps.ready(init);
+            function init() {
+                myMap = new ymaps.Map("map", {
+                    center: [53.904, 87.1303],
+                    zoom: 10
+                });
+            }
+
+            $(document).ready(function () {
+                $.datepicker.regional['ru'] = {
+                    closeText: 'Закрыть',
+                    prevText: '&#x3c;Пред',
+                    nextText: 'След&#x3e;',
+                    currentText: 'Сегодня',
+                    monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+                    dayNames: ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'],
+                    dayNamesShort: ['вск', 'пнд', 'втр', 'срд', 'чтв', 'птн', 'сбт'],
+                    dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+                    dateFormat: 'dd.mm.yy',
+                    firstDay: 1,
+                    isRTL: false
+                };
+                $.datepicker.setDefaults($.datepicker.regional['ru']);
+                $('#dt').datepicker().datepicker('setDate', 'today');
+            });
+
+
+            function onRefresh() {
+                myMap.geoObjects.removeAll();
+                $.getJSON('/track/getloc?PHONE=' + $('#phone').val() + '&DT=' + $('#dt').val(), function (data) {
+                    $.each(data, function (i, item) {
+                        //Именно тут указываем координаты
+                        var myPlacemark = new ymaps.Placemark(
+                                [item.LAT, item.LON],
+                                {
+                                    balloonContent: '<b>' + item.DT + '</b>',
+                                    iconContent: i
+                                });
+                        myMap.geoObjects.add(myPlacemark);
+                    });
+                });
+            }
+        </script>
+
+    {% endblock %}    
+
+
+
